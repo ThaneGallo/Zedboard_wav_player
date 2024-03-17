@@ -1,29 +1,25 @@
-# Lab Instructions
-
-[Lab Instructions](LabInstructions.md)
-
 # Project Description
 
-This lab's objective is to create an audio module in order to stream audio from the board. It includes creating the audio module as well as modifying the user side code from lab5 in order to integrate it with the audio module. In order to use the code you need to set up both the kaudio module and the usermode-player instructions for which are linked below.
+This is the code for the kaudio module. It sets up the module and all the required kernel operations and the hardware in order for the usermode side to be able to play the audio.
 
-# Kaudio Module
+# Installation/Make Instructions
 
-[kaudio description](kaudio/README.md)
+To make the module, you can navigate into the "kaudio" folder where the file "kaudio.c" is located and run the make command. Afterwards just transfer the compiled module file to the board with scp and run insmod command to install it.
 
-# Usermode-player
+# Usage Definition/Examples
 
-[usermode-player description](usermode-player/README.md)
+After the module is installed, nothing should happen, but after the usermode-player is transfered to the board it can be used in order to play the audio files.
 
-# Design Discussion
+# Known Issues
 
-#### 6.1:
+The CODEC samples at a rate of approximately 45kHz and can currently only accept WAV files. Also, the removal of the module does not remove the character device within the /dev/ directory so it requires a reboot. However, it does function properly before it would be removed
 
-Write is an atomic operation that performs the action of writing to a file pointer object, it is a call to the OS made by the aplication and is non-buffering which would mean that the entire write is performed at once. fwrite is buffering so it performs the write in several chunks in a buffered stream this allows for more data to be processed faster. This would mean that if we used open and write instead of the buffered variants the data would be distorted more.
+# Release Notes
 
-#### 6.2:
+#### Release 0.1
 
-Every poll to the FIFO is a small slow down and decease in system performance in the ideal world the polling would only occur when the full threshold is reached rather than at multiple intervals. The initial range of the usleep was from 1000 to 2000 which is from .001 sec to .002 sec. Although this is a small timing the sound seems good and plays correctly as the usleep increases the system load decreases to a point without distorting the audio and in reverse if the timing is smaller the system load increases as it polls more frequently and sleeps less. If the usleep was commented out completely we can see that the system load is ....
+The FIFO is continiously polled to see if it is full then runs a usleep_range() to allow for the samples to be sent and for the FIFO to be filled up again. It is currently not optimized as it uses a range of sleeps to cater toward different WAV files characteristics and is a random sleep length. This adds stress to the CPU as polling is something that would take cycles to check every time the polling occurs.
 
-#### 6.3:
+#### Release 0.2
 
-The AXI FIFO can use the wakeup interruptable to check when the fifo hits its programmable empty and the filling would need to begin again and because it is caused by an interrupt it only activates when it absolutely needs to rather than at a regular time interval. wake_up and wait_event_interruptable work in tandem and work differently than the polling because one makes the process sleep and wait until the interrupt occurs while the other only wakes it up when it reaches a threshold so it only triggers at optimal moments rather than the timed polling that the pervious function used.
+Now the FIFO uses an interrupt handler to see if it is empty or full. It uses wait_event_interruptable() when the FIFO full interrupt and then sets the FIFO to sleep until the FIFO hits the empty threshold and then uses wake_up() to start the FIFO filling. This allows for better CPU usage as it stresses it less and only wakes or sleeps when the interrupt occurs. 
