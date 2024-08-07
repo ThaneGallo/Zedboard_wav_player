@@ -22,7 +22,7 @@ Write is an atomic operation that performs the action of writing to a file point
 
 #### 6.2:
 
-Every poll to the FIFO is a small slow down and decease in system performance in the ideal world the polling would only occur when the full threshold is reached rather than at multiple intervals. The initial range of the usleep was from 1000 to 2000 which is from .001 sec to .002 sec. Although this is a small timing the sound seems good and plays correctly as the usleep increases the system load decreases to a point without distorting the audio and in reverse if the timing is smaller the system load increases as it polls more frequently and sleeps less. If the usleep was commented out completely we can see that the system load is ....
+Every poll to the FIFO is a small slow down and decease in system performance in the ideal world the polling would only occur when the full threshold is reached rather than at multiple intervals. The initial range of the usleep was from 1000 to 2000 which is from .001 sec to .002 sec. Although this is a small timing the sound seems good and plays correctly as the usleep increases the system load decreases to a point without distorting the audio and in reverse if the timing is smaller the system load increases as it polls more frequently and sleeps less. If the usleep was commented out completely we can see that the system load is much higher as it polls as fast as the system is able to greatly increasing the resources required
 
 #### 6.3:
 
